@@ -1,0 +1,30 @@
+import sys, os
+sys.path.append(os.path.abspath(".."))
+
+from itcsimlib import *
+from itcsimlib.model_trap import IKi
+
+sim = ITCSim(T0=313.15, units="kcal", verbose=False)
+sim.set_model( IKi() )
+sim.set_model_params(dG0=-4.6 , dGoe=-2.5 ,dGoo=-3.2 , dH0=-6 , dHoe=-10 ,dHoo=-5.8 ,dCp0=-0.01 ,dCpoe=-0.5 ,dCpoo=0 )
+
+
+sim.add_experiment_file('Bha_WT_noHis_25.txt', skip=[0])
+sim.add_experiment_file('Bha_WT_noHis_30.txt', skip=[0])
+sim.add_experiment_file('Bha_WT_noHis_35.txt', skip=[0])
+sim.add_experiment_file('Bha_WT_noHis_40.txt', skip=[0])
+sim.add_experiment_file('Bha_WT_noHis_45.txt', skip=[0])
+
+
+fit = ITCFit( sim, verbose=True )
+
+optimized_params,chisq = fit.optimize(  params=['dG0','dGoe','dGoo','dH0','dHoe','dHoo','dCp0','dCpoe','dCpoo'], update_fits=True)
+
+sim.run()
+print(optimized_params,chisq)
+sim.make_plots()
+
+from itcsimlib.utilities import write_params_to_file
+write_params_to_file( "WT_parameters_20210511.txt", params=sim.get_model_params() )
+
+sim.done()
